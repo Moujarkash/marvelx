@@ -4,6 +4,7 @@ import com.mod.marvelx.BuildKonfig
 import com.mod.marvelx.Greeting
 import com.mod.marvelx.database.getRoomDatabase
 import com.mod.marvelx.managers.ApiKeyManager
+import com.mod.marvelx.services.MarvelApiService
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -19,6 +20,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -51,7 +53,7 @@ val appModule = module {
             it.plugin(HttpSend).intercept { request ->
                 apiKeyManager.storeApiKeys(apiKey = BuildKonfig.API_KEY, privateKey = BuildKonfig.PRIVATE_KEY)
 
-                val timestamp = kotlin.time.Clock.System.now().toEpochMilliseconds().toString()
+                val timestamp = Clock.System.now().toEpochMilliseconds().toString()
                 val apiKey =  apiKeyManager.getApiKey() ?: ""
                 val hash = apiKeyManager.generateHash(timestamp)
 
@@ -66,4 +68,5 @@ val appModule = module {
     }
     singleOf(::Greeting)
     single { getRoomDatabase(get()) }
+    singleOf(::MarvelApiService)
 }
