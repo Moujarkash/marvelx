@@ -1,8 +1,10 @@
 package com.mod.marvelx
 
+import com.mod.marvelx.models.Comic
+import com.mod.marvelx.models.MarvelApiResponse
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -16,6 +18,7 @@ class Greeting: KoinComponent {
 
     suspend fun greeting(): String {
         val response = client.get("https://gateway.marvel.com/v1/public/comics/")
-        return response.bodyAsText()
+        val comicResponse = response.body<MarvelApiResponse<Comic>>()
+        return comicResponse.data.results[0].title
     }
 }
