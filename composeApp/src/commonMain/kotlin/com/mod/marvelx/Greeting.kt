@@ -15,7 +15,7 @@ class Greeting: KoinComponent {
     }
 
     suspend fun greeting(): String {
-        val response = client.get("https://ktor.io/docs/")
+        val response = client.get("https://gateway.marvel.com/v1/public/comics/")
         return response.bodyAsText()
     }
 }

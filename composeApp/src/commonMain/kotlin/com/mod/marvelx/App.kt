@@ -12,23 +12,36 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import com.mod.marvelx.di.appModule
+import com.mod.marvelx.storage.SecureKeyStorage
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
+import org.koin.dsl.module
 
 @Composable
 @Preview
-fun App() {
+fun App(
+    prefs: DataStore<Preferences>,
+    secureKeyStorage: SecureKeyStorage
+) {
     KoinApplication(application = {
-        modules(appModule)
+        modules(
+            module {
+                single { prefs }
+                single { secureKeyStorage }
+            },
+            appModule
+        )
     }) {
         MaterialTheme {
             Surface(
                 modifier = Modifier.fillMaxSize(),
             ) {
-                val scope = rememberCoroutineScope()
                 var text by remember { mutableStateOf("Loading") }
+                val scope = rememberCoroutineScope()
                 LaunchedEffect(true) {
                     scope.launch {
                         text = try {

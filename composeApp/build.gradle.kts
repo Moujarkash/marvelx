@@ -1,5 +1,6 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -7,11 +8,30 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.buildkonfig)
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
+fun getLocalProperty(key: String, defaultValue: String = ""): String {
+    return localProperties.getProperty(key) ?: System.getenv(key) ?: defaultValue
+}
+
+buildkonfig {
+    packageName = "com.mod.marvelx"
+
+    defaultConfigs {
+        buildConfigField(STRING, "API_KEY", getLocalProperty("API_KEY"))
+        buildConfigField(STRING, "PRIVATE_KEY", getLocalProperty("PRIVATE_KEY"))
+    }
 }
 
 kotlin {
     androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
@@ -35,6 +55,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.androidx.security.crypto)
+            implementation(libs.tink.android)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -59,6 +81,8 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
             implementation(libs.napier)
+            implementation(libs.datastore.preferences)
+            implementation(libs.datastore)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
