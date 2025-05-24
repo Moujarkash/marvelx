@@ -14,6 +14,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.room.RoomDatabase
+import com.mod.marvelx.database.AppDatabase
 import com.mod.marvelx.di.appModule
 import com.mod.marvelx.storage.SecureKeyStorage
 import kotlinx.coroutines.launch
@@ -25,13 +27,15 @@ import org.koin.dsl.module
 @Preview
 fun App(
     prefs: DataStore<Preferences>,
-    secureKeyStorage: SecureKeyStorage
+    secureKeyStorage: SecureKeyStorage,
+    databaseBuilder: RoomDatabase.Builder<AppDatabase>
 ) {
     KoinApplication(application = {
         modules(
             module {
                 single { prefs }
                 single { secureKeyStorage }
+                single { databaseBuilder }
             },
             appModule
         )

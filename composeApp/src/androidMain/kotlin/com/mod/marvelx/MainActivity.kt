@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.remember
+import com.mod.marvelx.database.getDatabaseBuilder
 import com.mod.marvelx.storage.SecureKeyStorage
 import com.mod.marvelx.storage.createDataStore
 
@@ -18,6 +19,9 @@ class MainActivity : ComponentActivity() {
                 },
                 secureKeyStorage = remember {
                     SecureKeyStorage(applicationContext)
+                },
+                databaseBuilder = remember {
+                    getDatabaseBuilder(applicationContext)
                 }
             )
         }

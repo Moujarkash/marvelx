@@ -2,6 +2,7 @@ package com.mod.marvelx.di
 
 import com.mod.marvelx.BuildKonfig
 import com.mod.marvelx.Greeting
+import com.mod.marvelx.database.getRoomDatabase
 import com.mod.marvelx.managers.ApiKeyManager
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
@@ -64,4 +65,5 @@ val appModule = module {
         }
     }
     singleOf(::Greeting)
+    single { getRoomDatabase(get()) }
 }
