@@ -4,12 +4,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.window.ComposeUIViewController
 import com.mod.marvelx.database.getDatabaseBuilder
 import com.mod.marvelx.storage.SecureKeyStorage
-import com.mod.marvelx.storage.createDataStore
+import com.mod.marvelx.storage.createDataStoreIos
 
 fun MainViewController() = ComposeUIViewController {
     App(
         prefs = remember {
-            createDataStore()
+            createDataStoreIos()
         },
         secureKeyStorage = remember {
             SecureKeyStorage()

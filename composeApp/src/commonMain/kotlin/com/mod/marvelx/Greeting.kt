@@ -1,14 +1,15 @@
 package com.mod.marvelx
 
-import com.mod.marvelx.services.MarvelApiService
+import com.mod.marvelx.repositories.MarvelRepository
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class Greeting: KoinComponent {
-    private val apiService by inject<MarvelApiService>()
+    private val repo by inject<MarvelRepository>()
 
     suspend fun greeting(): String {
-        val response = apiService.getComics(offset = 0, limit = 40, headers = emptyMap())
-        return response.data.results[0].title
+        val charactersResponse = repo.getCharacters(offset = 0, limit = 40)
+        val comicsResponse = repo.getComics(offset = 0, limit = 40)
+        return charactersResponse.items[30].name + " - " + comicsResponse.items[30].title
     }
 }

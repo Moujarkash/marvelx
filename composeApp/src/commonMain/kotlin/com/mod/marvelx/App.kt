@@ -31,14 +31,10 @@ fun App(
     databaseBuilder: RoomDatabase.Builder<AppDatabase>
 ) {
     KoinApplication(application = {
-        modules(
-            module {
-                single { prefs }
-                single { secureKeyStorage }
-                single { databaseBuilder }
-            },
-            appModule
-        )
+        modules(module {
+            single<DataStore<Preferences>> { prefs }
+            single<SecureKeyStorage> { secureKeyStorage }
+        }, appModule(databaseBuilder))
     }) {
         MaterialTheme {
             Surface(
@@ -51,6 +47,7 @@ fun App(
                         text = try {
                             Greeting().greeting()
                         } catch (e: Exception) {
+                            appLog(LogLevel.ERROR,e.message ?: "error")
                             e.message ?: "error"
                         }
                     }

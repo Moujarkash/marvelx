@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.buildkonfig)
     alias(libs.plugins.room)
+    alias(libs.plugins.ksp)
 }
 
 val localProperties = Properties()
@@ -37,7 +38,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -48,9 +49,9 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
-        
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
@@ -81,7 +82,6 @@ kotlin {
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.napier)
             implementation(libs.datastore.preferences)
             implementation(libs.datastore)
             implementation(libs.room.runtime)
@@ -120,6 +120,9 @@ android {
     }
     dependencies {
         implementation(libs.kotlinx.coroutines.android)
+        implementation(libs.koin.android)
+        ksp(libs.room.compiler)
+        annotationProcessor(libs.room.compiler)
     }
 }
 

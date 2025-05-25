@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.remember
 import com.mod.marvelx.database.getDatabaseBuilder
 import com.mod.marvelx.storage.SecureKeyStorage
-import com.mod.marvelx.storage.createDataStore
+import com.mod.marvelx.storage.createDataStoreAndroid
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             App(
                 prefs = remember {
-                    createDataStore(applicationContext)
+                    createDataStoreAndroid(applicationContext)
                 },
                 secureKeyStorage = remember {
                     SecureKeyStorage(applicationContext)

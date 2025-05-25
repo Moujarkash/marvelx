@@ -6,7 +6,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.*
 
 @OptIn(ExperimentalForeignApi::class)
-fun createDataStore(): DataStore<Preferences> = createDataStore(
+fun createDataStoreIos(): DataStore<Preferences> = createDataStore(
     producePath = {
         val documentDirectory: NSURL? = NSFileManager.defaultManager.URLForDirectory(
             directory = NSDocumentDirectory,

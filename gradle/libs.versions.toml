@@ -19,13 +19,13 @@ ktor = "3.1.2"
 coroutines = "1.10.1"
 serialization = "1.8.0"
 kotlinx-datetime = "0.6.2"
-napier = "2.7.1"
 datastore = "1.1.7"
 androidx-security = "1.1.0-alpha07"
 buildkonfig = "0.17.1"
 tink-android = "1.8.0"
 room = "2.7.1"
-sqlite = "2.5.0-SNAPSHOT"
+sqlite = "2.5.1"
+ksp = "2.1.21-2.0.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -57,7 +57,6 @@ ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negoti
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
-napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "androidx-security" }
@@ -75,3 +74,4 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
 room = { id = "androidx.room", version.ref = "room" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
