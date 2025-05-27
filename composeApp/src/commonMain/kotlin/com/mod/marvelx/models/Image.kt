@@ -8,7 +8,7 @@ data class Image(
     @SerialName("path") val path: String,
     @SerialName("extension") val extension: String
 ) {
-    fun getImageUrl(variant: String = "standard_medium"): String {
+    fun getImageUrl(variant: String = ImageVariant.STANDARD_MEDIUM.value): String {
         return "$path/$variant.$extension"
     }
 }

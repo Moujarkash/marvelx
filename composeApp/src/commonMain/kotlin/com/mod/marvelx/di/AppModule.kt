@@ -10,6 +10,7 @@ import com.mod.marvelx.managers.ApiKeyManager
 import com.mod.marvelx.appLog
 import com.mod.marvelx.repositories.MarvelRepository
 import com.mod.marvelx.services.MarvelApiService
+import com.mod.marvelx.viewModels.ComicsViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.compression.ContentEncoding
@@ -21,6 +22,7 @@ import io.ktor.client.request.parameter
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -74,4 +76,5 @@ fun appModule(builder: RoomDatabase.Builder<AppDatabase>) = module {
     single<AppDatabase> { getRoomDatabase(builder) }
     singleOf(::MarvelApiService)
     singleOf(::MarvelRepository)
+    viewModel { ComicsViewModel(get()) }
 }
