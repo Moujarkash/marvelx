@@ -10,6 +10,7 @@ import com.mod.marvelx.managers.ApiKeyManager
 import com.mod.marvelx.appLog
 import com.mod.marvelx.repositories.MarvelRepository
 import com.mod.marvelx.services.MarvelApiService
+import com.mod.marvelx.viewModels.CharactersViewModel
 import com.mod.marvelx.viewModels.ComicsViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpSend
@@ -77,4 +78,5 @@ fun appModule(builder: RoomDatabase.Builder<AppDatabase>) = module {
     singleOf(::MarvelApiService)
     singleOf(::MarvelRepository)
     viewModel { ComicsViewModel(get()) }
+    viewModel { CharactersViewModel(get()) }
 }

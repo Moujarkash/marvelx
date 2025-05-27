@@ -81,11 +81,11 @@ fun ComicItem(
                 // Issue and Page info
                 Row {
                     if (comic.issueNumber > 0) {
-                        ComicInfoChip(text = "Issue #${comic.issueNumber.toInt()}")
+                        InfoChip(text = "Issue #${comic.issueNumber.toInt()}", textModifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                     }
                     if (comic.pageCount > 0) {
-                        ComicInfoChip(text = "${comic.pageCount} pages")
+                        InfoChip(text = "${comic.pageCount} pages", textModifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                     }
                 }
 

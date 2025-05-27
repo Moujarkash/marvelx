@@ -6,18 +6,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mod.marvelx.ui.MarvelColors
 import com.mod.marvelx.ui.Screen
+import marvelx.composeapp.generated.resources.Res
+import marvelx.composeapp.generated.resources.comic_icon
+import marvelx.composeapp.generated.resources.character_icon
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun DrawerContent(
@@ -44,18 +45,18 @@ fun DrawerContent(
             )
         }
 
-        Divider(color = MarvelColors.MarvelGray)
+        HorizontalDivider(color = MarvelColors.MarvelGray)
 
         // Navigation Items
         DrawerItem(
-            icon = Icons.Default.Done,
+            icon = painterResource(Res.drawable.comic_icon),
             title = "Comics",
             isSelected = currentRoute == Screen.Comics.route,
             onClick = { onNavigate(Screen.Comics.route) }
         )
 
         DrawerItem(
-            icon = Icons.Default.Person,
+            icon = painterResource(Res.drawable.character_icon),
             title = "Characters",
             isSelected = currentRoute == Screen.Characters.route,
             onClick = { onNavigate(Screen.Characters.route) }

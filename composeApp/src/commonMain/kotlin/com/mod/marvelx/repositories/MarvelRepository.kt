@@ -1,7 +1,10 @@
 package com.mod.marvelx.repositories
 
+import com.mod.marvelx.LogLevel
+import com.mod.marvelx.appLog
 import com.mod.marvelx.database.AppDatabase
 import com.mod.marvelx.database.entities.CacheMetadata
+import com.mod.marvelx.exceptions.NotModifiedException
 import com.mod.marvelx.extensions.*
 import com.mod.marvelx.models.Character
 import com.mod.marvelx.models.Comic
@@ -52,24 +55,17 @@ class MarvelRepository(
         // Make API request with ETag if available
         return try {
             val headers = cacheMetadata?.etag?.let { mapOf("If-None-Match" to it) } ?: emptyMap()
-            val response = apiService.getComics(offset = offset, limit = limit, titleStartsWith = titleStartsWith, headers = headers)
+            val response = apiService.getComics(
+                offset = offset,
+                limit = limit,
+                titleStartsWith = titleStartsWith,
+                headers = headers
+            )
 
             when (response.code) {
                 304 -> {
-                    // Not modified, return cached data
-                    val cachedComics = if (titleStartsWith != null) {
-                        comicDao.searchComics(titleStartsWith, offset, limit)
-                    } else {
-                        comicDao.getComics(offset, limit)
-                    }
-
-                    PaginatedResult(
-                        items = cachedComics.map { it.toDomain() },
-                        offset = offset,
-                        limit = limit,
-                        total = cacheMetadata?.total ?: 0,
-                        hasMore = offset + limit < (cacheMetadata?.total ?: 0)
-                    )
+                    // Not modified - throw exception to indicate no new data
+                    throw NotModifiedException("Data not modified since last request. ETag: ${cacheMetadata?.etag}")
                 }
 
                 200 -> {
@@ -92,19 +88,48 @@ class MarvelRepository(
                     )
                     cacheMetadataDao.insertCacheMetadata(newMetadata)
 
-
-                        PaginatedResult(
-                            items = comics,
-                            offset = offset,
-                            limit = limit,
-                            total = response.data.total,
-                            hasMore = offset + limit < response.data.total
-                        )
+                    PaginatedResult(
+                        items = comics,
+                        offset = offset,
+                        limit = limit,
+                        total = response.data.total,
+                        hasMore = offset + limit < response.data.total
+                    )
                 }
 
                 else -> throw Exception("API Error: ${response.status}")
             }
+        } catch (e: NotModifiedException) {
+            // Handle 304 - return cached data if available
+            appLog(LogLevel.DEBUG, "Data not modified: ${e.message}")
+
+            val cachedComics = if (titleStartsWith != null) {
+                comicDao.searchComics(titleStartsWith, offset, limit)
+            } else {
+                comicDao.getComics(offset, limit)
+            }
+
+            if (cachedComics.isNotEmpty() && cacheMetadata != null) {
+                PaginatedResult(
+                    items = cachedComics.map { it.toDomain() },
+                    offset = offset,
+                    limit = limit,
+                    total = cacheMetadata.total,
+                    hasMore = offset + limit < cacheMetadata.total
+                )
+            } else {
+                // No cached data available, force a fresh request without ETag
+                appLog(LogLevel.WARN, "No cached data available for 304 response, making fresh request")
+                getComics(
+                    offset = offset,
+                    limit = limit,
+                    titleStartsWith = titleStartsWith,
+                    forceRefresh = true
+                )
+            }
         } catch (e: Exception) {
+            appLog(LogLevel.ERROR, e.message ?: "Error fetching characters")
+
             // Fallback to cache on network error
             val cachedComics = if (titleStartsWith != null) {
                 comicDao.searchComics(titleStartsWith, offset, limit)
@@ -113,12 +138,12 @@ class MarvelRepository(
             }
 
             if (cachedComics.isNotEmpty()) {
-                    PaginatedResult(
-                        items = cachedComics.map { it.toDomain() },
-                        offset = offset,
-                        limit = limit,
-                        total = cacheMetadata?.total ?: cachedComics.size,
-                        hasMore = false // Conservative approach during offline
+                PaginatedResult(
+                    items = cachedComics.map { it.toDomain() },
+                    offset = offset,
+                    limit = limit,
+                    total = cacheMetadata?.total ?: cachedComics.size,
+                    hasMore = false // Conservative approach during offline
                 )
             } else {
                 throw e
@@ -158,24 +183,17 @@ class MarvelRepository(
         // Make API request with ETag if available
         return try {
             val headers = cacheMetadata?.etag?.let { mapOf("If-None-Match" to it) } ?: emptyMap()
-            val response = apiService.getCharacters(offset = offset, limit = limit, nameStartsWith = nameStartsWith, headers = headers)
+            val response = apiService.getCharacters(
+                offset = offset,
+                limit = limit,
+                nameStartsWith = nameStartsWith,
+                headers = headers
+            )
 
             when (response.code) {
                 304 -> {
-                    // Not modified, return cached data
-                    val cachedCharacters = if (nameStartsWith != null) {
-                        characterDao.searchCharacters(nameStartsWith, offset, limit)
-                    } else {
-                        characterDao.getCharacters(offset, limit)
-                    }
-
-                    PaginatedResult(
-                        items = cachedCharacters.map { it.toDomain() },
-                        offset = offset,
-                        limit = limit,
-                        total = cacheMetadata?.total ?: 0,
-                        hasMore = offset + limit < (cacheMetadata?.total ?: 0)
-                    )
+                    // Not modified - throw exception to indicate no new data
+                    throw NotModifiedException("Data not modified since last request. ETag: ${cacheMetadata?.etag}")
                 }
 
                 200 -> {
@@ -198,7 +216,6 @@ class MarvelRepository(
                     )
                     cacheMetadataDao.insertCacheMetadata(newMetadata)
 
-
                     PaginatedResult(
                         items = characters,
                         offset = offset,
@@ -210,7 +227,37 @@ class MarvelRepository(
 
                 else -> throw Exception("API Error: ${response.status}")
             }
+        } catch (e: NotModifiedException) {
+            // Handle 304 - return cached data if available
+            appLog(LogLevel.DEBUG, "Data not modified: ${e.message}")
+
+            val cachedCharacters = if (nameStartsWith != null) {
+                characterDao.searchCharacters(nameStartsWith, offset, limit)
+            } else {
+                characterDao.getCharacters(offset, limit)
+            }
+
+            if (cachedCharacters.isNotEmpty() && cacheMetadata != null) {
+                PaginatedResult(
+                    items = cachedCharacters.map { it.toDomain() },
+                    offset = offset,
+                    limit = limit,
+                    total = cacheMetadata.total,
+                    hasMore = offset + limit < cacheMetadata.total
+                )
+            } else {
+                // No cached data available, force a fresh request without ETag
+                appLog(LogLevel.WARN, "No cached data available for 304 response, making fresh request")
+                getCharacters(
+                    offset = offset,
+                    limit = limit,
+                    nameStartsWith = nameStartsWith,
+                    forceRefresh = true
+                )
+            }
         } catch (e: Exception) {
+            appLog(LogLevel.ERROR, e.message ?: "Error fetching characters")
+
             // Fallback to cache on network error
             val cachedCharacters = if (nameStartsWith != null) {
                 characterDao.searchCharacters(nameStartsWith, offset, limit)

@@ -1,5 +1,6 @@
 package com.mod.marvelx.services
 
+import com.mod.marvelx.exceptions.NotModifiedException
 import com.mod.marvelx.models.Comic
 import com.mod.marvelx.models.Character
 import com.mod.marvelx.models.Creator
@@ -31,7 +32,7 @@ class MarvelApiService(
         headers: Map<String, String>
     ): MarvelApiResponse<Character> {
         return executeWithRetry {
-            httpClient.get("$BASE_URL/characters") {
+            val response = httpClient.get("$BASE_URL/characters") {
                 parameter("offset", offset)
                 parameter("limit", limit.coerceAtMost(100))
                 nameStartsWith?.let { parameter("nameStartsWith", it) }
@@ -39,7 +40,13 @@ class MarvelApiService(
                 headers.forEach { (key, value) ->
                     header(key, value)
                 }
-            }.body()
+            }
+
+            if (response.status.value == 304) {
+                throw NotModifiedException("Data not modified since last request")
+            }
+
+            response.body()
         }
     }
 
@@ -83,7 +90,7 @@ class MarvelApiService(
         headers: Map<String, String>
     ): MarvelApiResponse<Comic> {
         return executeWithRetry {
-            httpClient.get("$BASE_URL/comics") {
+            val response = httpClient.get("$BASE_URL/comics") {
                 parameter("offset", offset)
                 parameter("limit", limit.coerceAtMost(100))
                 titleStartsWith?.let { parameter("titleStartsWith", it) }
@@ -91,7 +98,13 @@ class MarvelApiService(
                 headers.forEach { (key, value) ->
                     header(key, value)
                 }
-            }.body()
+            }
+
+            if (response.status.value == 304) {
+                throw NotModifiedException("Data not modified since last request")
+            }
+
+            response.body()
         }
     }
 

@@ -3,41 +3,40 @@ package com.mod.marvelx.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mod.marvelx.repositories.MarvelRepository
-import com.mod.marvelx.ui.comics.ComicsIntent
-import com.mod.marvelx.ui.comics.ComicsUiState
+import com.mod.marvelx.ui.characters.CharactersIntent
+import com.mod.marvelx.ui.characters.CharactersUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ComicsViewModel(
+class CharactersViewModel(
     private val marvelRepository: MarvelRepository
 ) : ViewModel() {
-
-    private val _uiState = MutableStateFlow(ComicsUiState())
-    val uiState: StateFlow<ComicsUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(CharactersUiState())
+    val uiState: StateFlow<CharactersUiState> = _uiState.asStateFlow()
 
     private var currentOffset = 0
     private val pageSize = 20
 
     init {
-        handleIntent(ComicsIntent.LoadComics)
+        handleIntent(CharactersIntent.LoadCharacters)
     }
 
-    fun handleIntent(intent: ComicsIntent) {
+    fun handleIntent(intent: CharactersIntent) {
         when (intent) {
-            is ComicsIntent.LoadComics -> loadComics()
-            is ComicsIntent.RefreshComics -> refreshComics()
-            is ComicsIntent.LoadMoreComics -> loadMoreComics()
-            is ComicsIntent.SearchComics -> searchComics()
-            is ComicsIntent.SetSearchQuery -> setQuery(intent.query)
-            is ComicsIntent.ClearError -> clearError()
-            is ComicsIntent.ClearLoadMoreError -> clearLoadMoreError()
-            is ComicsIntent.RetryLoadMore -> retryLoadMore()
+            is CharactersIntent.LoadCharacters -> loadCharacters()
+            is CharactersIntent.RefreshCharacters -> refreshCharacters()
+            is CharactersIntent.LoadMoreCharacters -> loadMoreCharacters()
+            is CharactersIntent.SearchCharacters -> searchCharacters()
+            is CharactersIntent.SetSearchQuery -> setQuery(intent.query)
+            is CharactersIntent.ClearError -> clearError()
+            is CharactersIntent.ClearLoadMoreError -> clearLoadMoreError()
+            is CharactersIntent.RetryLoadMore -> retryLoadMore()
         }
     }
 
-    private fun loadComics(forceRefresh: Boolean = false) {
+    private fun loadCharacters(forceRefresh: Boolean = false) {
         if (_uiState.value.isLoading) return
 
         viewModelScope.launch {
@@ -49,27 +48,27 @@ class ComicsViewModel(
                     )
                 }
 
-                val result = marvelRepository.getComics(
+                val result = marvelRepository.getCharacters(
                     offset = if (forceRefresh) 0 else currentOffset,
                     limit = pageSize,
-                    titleStartsWith = _uiState.value.searchQuery.takeIf { it.isNotBlank() },
+                    nameStartsWith = _uiState.value.searchQuery.takeIf { it.isNotBlank() },
                     forceRefresh = forceRefresh
                 )
 
-                val newComics = if (forceRefresh) {
+                val newCharacters = if (forceRefresh) {
                     result.items
                 } else {
-                    _uiState.value.comics + result.items
+                    _uiState.value.characters + result.items
                 }
 
                 currentOffset = if (forceRefresh) result.limit else currentOffset + result.items.size
 
                 updateState {
                     copy(
-                        comics = newComics,
+                        characters = newCharacters,
                         isLoading = false,
                         hasMore = result.hasMore,
-                        isEmpty = newComics.isEmpty(),
+                        isEmpty = newCharacters.isEmpty(),
                         error = null
                     )
                 }
@@ -79,14 +78,14 @@ class ComicsViewModel(
                     copy(
                         isLoading = false,
                         error = e.message ?: "Unknown error occurred",
-                        isEmpty = comics.isEmpty()
+                        isEmpty = characters.isEmpty()
                     )
                 }
             }
         }
     }
 
-    private fun loadMoreComics() {
+    private fun loadMoreCharacters() {
         val currentState = _uiState.value
         if (currentState.isLoadingMore || !currentState.hasMore || currentState.isLoading) return
 
@@ -99,10 +98,10 @@ class ComicsViewModel(
                     )
                 }
 
-                val result = marvelRepository.getComics(
+                val result = marvelRepository.getCharacters(
                     offset = currentOffset,
                     limit = pageSize,
-                    titleStartsWith = _uiState.value.searchQuery.takeIf { it.isNotBlank() },
+                    nameStartsWith = _uiState.value.searchQuery.takeIf { it.isNotBlank() },
                     forceRefresh = false
                 )
 
@@ -110,7 +109,7 @@ class ComicsViewModel(
 
                 updateState {
                     copy(
-                        comics = comics + result.items,
+                        characters = characters + result.items,
                         isLoadingMore = false,
                         hasMore = result.hasMore,
                         loadMoreError = null
@@ -121,16 +120,16 @@ class ComicsViewModel(
                 updateState {
                     copy(
                         isLoadingMore = false,
-                        loadMoreError = e.message ?: "Failed to load more comics"
+                        loadMoreError = e.message ?: "Failed to load more characters"
                     )
                 }
             }
         }
     }
 
-    private fun searchComics() {
+    private fun searchCharacters() {
         currentOffset = 0
-        loadComics(forceRefresh = true)
+        loadCharacters(forceRefresh = true)
     }
 
     private fun setQuery(query: String) {
@@ -140,9 +139,9 @@ class ComicsViewModel(
         updateState { copy(searchQuery = query) }
     }
 
-    private fun refreshComics() {
+    private fun refreshCharacters() {
         currentOffset = 0
-        loadComics(forceRefresh = true)
+        loadCharacters(forceRefresh = true)
     }
 
     private fun clearError() {
@@ -155,10 +154,10 @@ class ComicsViewModel(
 
     private fun retryLoadMore() {
         clearLoadMoreError()
-        loadMoreComics()
+        loadMoreCharacters()
     }
 
-    private fun updateState(update: ComicsUiState.() -> ComicsUiState) {
+    private fun updateState(update: CharactersUiState.() -> CharactersUiState) {
         _uiState.value = _uiState.value.update()
     }
 }

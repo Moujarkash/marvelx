@@ -14,13 +14,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import com.mod.marvelx.ui.MarvelColors
 
 @Composable
 fun DrawerItem(
-    icon: ImageVector,
+    icon: Painter,
     title: String,
     isSelected: Boolean,
     onClick: () -> Unit
@@ -37,7 +37,7 @@ fun DrawerItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = icon,
+            painter = icon,
             contentDescription = title,
             tint = if (isSelected) MarvelColors.MarvelRed else MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(24.dp)
