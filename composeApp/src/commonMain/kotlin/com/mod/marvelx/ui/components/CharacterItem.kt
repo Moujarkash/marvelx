@@ -28,6 +28,7 @@ import com.mod.marvelx.ui.MarvelColors
 @Composable
 fun CharacterItem(
     character: Character,
+    imageVariant: ImageVariant = ImageVariant.STANDARD_LARGE,
     onClick: () -> Unit
 ) {
     MarvelCard(
@@ -40,7 +41,7 @@ fun CharacterItem(
         ) {
             // Character Image
             AsyncImage(
-                model = character.thumbnail.getImageUrl(variant = ImageVariant.STANDARD_LARGE.value).replace("http://", "https://"),
+                model = character.thumbnail.getImageUrl(variant = imageVariant.value).replace("http://", "https://"),
                 contentDescription = character.name,
                 modifier = Modifier
                     .fillMaxWidth()

@@ -38,7 +38,7 @@ fun CharacterInfoSection(character: Character) {
             ) {
                 // Character Image
                 AsyncImage(
-                    model = character.thumbnail.getImageUrl(variant = ImageVariant.STANDARD_XLARGE.value).replace("http://", "https://"),
+                    model = character.thumbnail.getImageUrl(variant = ImageVariant.PORTRAIT_UNCANNY.value).replace("http://", "https://"),
                     contentDescription = character.name,
                     modifier = Modifier
                         .size(120.dp, 180.dp)
@@ -82,7 +82,7 @@ fun CharacterInfoSection(character: Character) {
             // Character URLs (if available)
             if (character.urls.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
-                CharacterLinksSection(urls = character.urls)
+                LinksSection(urls = character.urls)
             }
         }
     }

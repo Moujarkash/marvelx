@@ -12,6 +12,7 @@ import com.mod.marvelx.repositories.MarvelRepository
 import com.mod.marvelx.services.MarvelApiService
 import com.mod.marvelx.viewModels.CharacterDetailsViewModel
 import com.mod.marvelx.viewModels.CharactersViewModel
+import com.mod.marvelx.viewModels.ComicDetailsViewModel
 import com.mod.marvelx.viewModels.ComicsViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpSend
@@ -84,6 +85,12 @@ fun appModule(builder: RoomDatabase.Builder<AppDatabase>) = module {
         CharacterDetailsViewModel(
             marvelRepository = get(),
             characterId = characterId
+        )
+    }
+    viewModel { (comicId: Int) ->
+        ComicDetailsViewModel(
+            marvelRepository = get(),
+            comicId = comicId
         )
     }
 }

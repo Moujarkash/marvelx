@@ -15,5 +15,12 @@ data class Character(
     @SerialName("series") val series: ResourceList,
     @SerialName("stories") val stories: ResourceList,
     @SerialName("events") val events: ResourceList,
-    @SerialName("urls") val urls: List<Url>
-)
+    @SerialName("urls") val urls: MutableList<Url>
+) {
+    init {
+        if (urls.isEmpty()) {
+            urls.add(Url("detail", "http://marvel.com"))
+        }
+    }
+}
+

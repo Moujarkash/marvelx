@@ -17,7 +17,7 @@ import com.mod.marvelx.utils.getPlatformContext
 import com.mod.marvelx.utils.openUrl
 
 @Composable
-fun CharacterLinkChip(url: Url) {
+fun LinkChip(url: Url) {
     val context = getPlatformContext()
 
     Surface (

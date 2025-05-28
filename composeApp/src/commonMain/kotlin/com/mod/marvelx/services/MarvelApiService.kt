@@ -146,13 +146,19 @@ class MarvelApiService(
         headers: Map<String, String>
     ): MarvelApiResponse<Character> {
         return executeWithRetry {
-            httpClient.get("$BASE_URL/comics/$comicId/characters") {
+            val response = httpClient.get("$BASE_URL/comics/$comicId/characters") {
                 parameter("offset", offset)
                 parameter("limit", limit.coerceAtMost(100))
                 headers.forEach { (key, value) ->
                     header(key, value)
                 }
-            }.body()
+            }
+
+            if (response.status.value == 304) {
+                throw NotModifiedException("Data not modified since last request")
+            }
+
+            response.body()
         }
     }
 

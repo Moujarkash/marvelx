@@ -21,7 +21,7 @@ data class Comic(
     @SerialName("pageCount") val pageCount: Int,
     @SerialName("textObjects") val textObjects: List<TextObject>,
     @SerialName("resourceURI") val resourceURI: String,
-    @SerialName("urls") val urls: List<Url>,
+    @SerialName("urls") val urls: MutableList<Url>,
     @SerialName("series") val series: ResourceSummary,
     @SerialName("variants") val variants: List<ResourceSummary>,
     @SerialName("collections") val collections: List<ResourceSummary>,
@@ -34,4 +34,10 @@ data class Comic(
     @SerialName("characters") val characters: ResourceList,
     @SerialName("stories") val stories: ResourceList,
     @SerialName("events") val events: ResourceList
-)
+) {
+    init {
+        if (urls.isEmpty()) {
+            urls.add(Url("detail", "http://marvel.com"))
+        }
+    }
+}

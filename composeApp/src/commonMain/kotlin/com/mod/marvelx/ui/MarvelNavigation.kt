@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.mod.marvelx.ui.screens.CharacterDetailsScreen
 import com.mod.marvelx.ui.screens.CharactersScreen
-import com.mod.marvelx.ui.screens.ComicDetailScreen
+import com.mod.marvelx.ui.screens.ComicDetailsScreen
 import com.mod.marvelx.ui.screens.ComicsScreen
 
 @Composable
@@ -36,8 +36,11 @@ fun MarvelNavigation(
 
         composable(Screen.ComicDetails.route) { backStackEntry ->
             val comicId = backStackEntry.arguments?.getString("comicId") ?: ""
-            ComicDetailScreen(
-                comicId = comicId
+            ComicDetailsScreen(
+                comicId = comicId,
+                onCharacterClick = { characterId, characterName ->
+                    navController.navigate(Screen.CharacterDetails.createRoute(characterId, characterName))
+                }
             )
         }
 

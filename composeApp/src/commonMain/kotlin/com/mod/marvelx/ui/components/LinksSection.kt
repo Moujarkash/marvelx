@@ -16,7 +16,7 @@ import com.mod.marvelx.models.Url
 import com.mod.marvelx.ui.MarvelColors
 
 @Composable
-fun CharacterLinksSection(urls: List<Url>) {
+fun LinksSection(urls: List<Url>) {
     Column {
         Text(
             text = "Links",
@@ -29,7 +29,7 @@ fun CharacterLinksSection(urls: List<Url>) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(urls) { url ->
-                CharacterLinkChip(url = url)
+                LinkChip(url = url)
             }
         }
     }
