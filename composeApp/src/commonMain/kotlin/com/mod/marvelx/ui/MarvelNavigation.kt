@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.mod.marvelx.ui.screens.CharacterDetailScreen
+import com.mod.marvelx.ui.screens.CharacterDetailsScreen
 import com.mod.marvelx.ui.screens.CharactersScreen
 import com.mod.marvelx.ui.screens.ComicDetailScreen
 import com.mod.marvelx.ui.screens.ComicsScreen
@@ -20,21 +20,21 @@ fun MarvelNavigation(
     ) {
         composable(Screen.Comics.route) {
             ComicsScreen(
-                onComicClick = { comicId ->
-                    navController.navigate(Screen.ComicDetail.createRoute(comicId))
+                onComicClick = { comicId, title ->
+                    navController.navigate(Screen.ComicDetails.createRoute(comicId, title))
                 }
             )
         }
 
         composable(Screen.Characters.route) {
             CharactersScreen(
-                onCharacterClick = { characterId ->
-                    navController.navigate(Screen.CharacterDetail.createRoute(characterId))
+                onCharacterClick = { characterId, characterName ->
+                    navController.navigate(Screen.CharacterDetails.createRoute(characterId, characterName))
                 }
             )
         }
 
-        composable(Screen.ComicDetail.route) { backStackEntry ->
+        composable(Screen.ComicDetails.route) { backStackEntry ->
             val comicId = backStackEntry.arguments?.getString("comicId") ?: ""
             ComicDetailScreen(
                 comicId = comicId,
@@ -44,12 +44,15 @@ fun MarvelNavigation(
             )
         }
 
-        composable(Screen.CharacterDetail.route) { backStackEntry ->
+        composable(Screen.CharacterDetails.route) { backStackEntry ->
             val characterId = backStackEntry.arguments?.getString("characterId") ?: ""
-            CharacterDetailScreen(
+            CharacterDetailsScreen(
                 characterId = characterId,
-                onBackClick = {
+                onNavigateBack = {
                     navController.popBackStack()
+                },
+                onComicClick = { id, title ->
+                    navController.navigate(Screen.ComicDetails.createRoute(id, title))
                 }
             )
         }

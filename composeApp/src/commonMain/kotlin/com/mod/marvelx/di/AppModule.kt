@@ -10,6 +10,7 @@ import com.mod.marvelx.managers.ApiKeyManager
 import com.mod.marvelx.appLog
 import com.mod.marvelx.repositories.MarvelRepository
 import com.mod.marvelx.services.MarvelApiService
+import com.mod.marvelx.viewModels.CharacterDetailsViewModel
 import com.mod.marvelx.viewModels.CharactersViewModel
 import com.mod.marvelx.viewModels.ComicsViewModel
 import io.ktor.client.HttpClient
@@ -79,4 +80,10 @@ fun appModule(builder: RoomDatabase.Builder<AppDatabase>) = module {
     singleOf(::MarvelRepository)
     viewModel { ComicsViewModel(get()) }
     viewModel { CharactersViewModel(get()) }
+    viewModel { (characterId: Int) ->
+        CharacterDetailsViewModel(
+            marvelRepository = get(),
+            characterId = characterId
+        )
+    }
 }

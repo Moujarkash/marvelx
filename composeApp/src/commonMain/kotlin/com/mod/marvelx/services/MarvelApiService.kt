@@ -55,11 +55,17 @@ class MarvelApiService(
         headers: Map<String, String>
     ): MarvelApiResponse<Character> {
         return executeWithRetry {
-            httpClient.get("$BASE_URL/characters/$id") {
+           val response = httpClient.get("$BASE_URL/characters/$id") {
                 headers.forEach { (key, value) ->
                     header(key, value)
                 }
-            }.body()
+            }
+
+            if (response.status.value == 304) {
+                throw NotModifiedException("Data not modified since last request")
+            }
+
+            response.body()
         }
     }
 
@@ -71,14 +77,20 @@ class MarvelApiService(
         headers: Map<String, String>
     ): MarvelApiResponse<Comic> {
         return executeWithRetry {
-            httpClient.get("$BASE_URL/characters/$characterId/comics") {
+            val response = httpClient.get("$BASE_URL/characters/$characterId/comics") {
                 parameter("offset", offset)
                 parameter("limit", limit.coerceAtMost(100))
                 orderBy?.let { parameter("orderBy", it) }
                 headers.forEach { (key, value) ->
                     header(key, value)
                 }
-            }.body()
+            }
+
+            if (response.status.value == 304) {
+                throw NotModifiedException("Data not modified since last request")
+            }
+
+            response.body()
         }
     }
 
@@ -113,11 +125,17 @@ class MarvelApiService(
         headers: Map<String, String>
     ): MarvelApiResponse<Comic> {
         return executeWithRetry {
-            httpClient.get("$BASE_URL/comics/$id") {
+            val response = httpClient.get("$BASE_URL/comics/$id") {
                 headers.forEach { (key, value) ->
                     header(key, value)
                 }
-            }.body()
+            }
+
+            if (response.status.value == 304) {
+                throw NotModifiedException("Data not modified since last request")
+            }
+
+            response.body()
         }
     }
 

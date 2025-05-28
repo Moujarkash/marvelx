@@ -44,15 +44,19 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    val customTitle = navBackStackEntry?.arguments?.getString("title")
+
     // Determine if current screen should show drawer
     val showDrawer = currentRoute in listOf(Screen.Comics.route, Screen.Characters.route)
     val currentScreen = when (currentRoute) {
         Screen.Comics.route -> Screen.Comics
         Screen.Characters.route -> Screen.Characters
-        Screen.ComicDetail.route -> Screen.ComicDetail
-        Screen.CharacterDetail.route -> Screen.CharacterDetail
+        Screen.ComicDetails.route -> Screen.ComicDetails
+        Screen.CharacterDetails.route -> Screen.CharacterDetails
         else -> Screen.Comics
     }
+
+    val displayTitle = customTitle ?: currentScreen.title
 
     MarvelTheme {
         ModalNavigationDrawer(
@@ -83,7 +87,7 @@ fun MainScreen() {
                     TopAppBar(
                         title = {
                             Text(
-                                text = currentScreen.title,
+                                text = displayTitle,
                                 style = MaterialTheme.typography.headlineSmall
                             )
                         },

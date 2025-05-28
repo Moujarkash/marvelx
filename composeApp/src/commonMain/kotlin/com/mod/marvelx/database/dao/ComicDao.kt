@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.mod.marvelx.database.entities.CharacterComicCrossRef
 import com.mod.marvelx.database.entities.ComicEntity
 
 @Dao
@@ -22,4 +23,19 @@ interface ComicDao {
 
     @Query("DELETE FROM comics WHERE lastUpdated < :timestamp")
     suspend fun deleteOldComics(timestamp: Long)
+
+    @Query("""
+    SELECT c.* FROM comics c 
+    INNER JOIN character_comic_cross_ref ccr ON c.id = ccr.comicId 
+    WHERE ccr.characterId = :characterId 
+    ORDER BY c.title ASC 
+    LIMIT :limit OFFSET :offset
+""")
+    suspend fun getComicsByCharacterId(characterId: Int, offset: Int, limit: Int): List<ComicEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCharacterComicCrossRefs(crossRefs: List<CharacterComicCrossRef>)
+
+    @Query("DELETE FROM character_comic_cross_ref WHERE createdAt < :timestamp")
+    suspend fun deleteOldCharacterComicCrossRefs(timestamp: Long)
 }

@@ -4,6 +4,7 @@ import com.mod.marvelx.LogLevel
 import com.mod.marvelx.appLog
 import com.mod.marvelx.database.AppDatabase
 import com.mod.marvelx.database.entities.CacheMetadata
+import com.mod.marvelx.database.entities.CharacterComicCrossRef
 import com.mod.marvelx.exceptions.NotModifiedException
 import com.mod.marvelx.extensions.*
 import com.mod.marvelx.models.Character
@@ -279,6 +280,132 @@ class MarvelRepository(
         }
     }
 
+    @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
+    suspend fun getCharacterComics(
+        characterId: Int,
+        offset: Int = 0,
+        limit: Int = 20,
+        orderBy: String? = null,
+        forceRefresh: Boolean = false
+    ): PaginatedResult<Comic> {
+
+        val requestKey = buildRequestKey("character_comics", offset, limit, "${characterId}_${orderBy ?: ""}")
+        val cacheMetadata = cacheMetadataDao.getCacheMetadata(requestKey)
+
+        if (!forceRefresh && cacheMetadata != null && !isCacheExpired(cacheMetadata)) {
+            val cachedComics = comicDao.getComicsByCharacterId(characterId, offset, limit)
+
+            if (cachedComics.isNotEmpty()) {
+                return PaginatedResult(
+                    items = cachedComics.map { it.toDomain() },
+                    offset = offset,
+                    limit = limit,
+                    total = cacheMetadata.total,
+                    hasMore = offset + limit < cacheMetadata.total
+                )
+            }
+        }
+
+        // Make API request with ETag if available
+        return try {
+            val headers = cacheMetadata?.etag?.let { mapOf("If-None-Match" to it) } ?: emptyMap()
+            val response = apiService.getCharacterComics(
+                characterId = characterId,
+                offset = offset,
+                limit = limit,
+                orderBy = orderBy,
+                headers = headers
+            )
+
+            when (response.code) {
+                304 -> {
+                    // Not modified - throw exception to indicate no new data
+                    throw NotModifiedException("Character comics not modified since last request. ETag: ${cacheMetadata?.etag}")
+                }
+
+                200 -> {
+                    // New data, cache it
+                    val comics = response.data.results
+
+                    // Store comics
+                    comicDao.insertComics(comics.map { it.toEntity() })
+
+                    // Store character-comic relationships
+                    comicDao.insertCharacterComicCrossRefs(
+                        comics.map { CharacterComicCrossRef(characterId, it.id) }
+                    )
+
+                    // Update cache metadata
+                    val newMetadata = CacheMetadata(
+                        id = Uuid.random().toString(),
+                        requestKey = requestKey,
+                        etag = response.etag,
+                        lastFetched = Clock.System.now().toEpochMilliseconds(),
+                        offset = offset,
+                        limit = limit,
+                        total = response.data.total,
+                        entityType = "character_comics",
+                        queryParams = "${characterId}_${orderBy ?: ""}",
+                        expirationTime = Clock.System.now().toEpochMilliseconds() + (24 * 60 * 60 * 1000)
+                    )
+                    cacheMetadataDao.insertCacheMetadata(newMetadata)
+
+                    PaginatedResult(
+                        items = comics,
+                        offset = offset,
+                        limit = limit,
+                        total = response.data.total,
+                        hasMore = offset + limit < response.data.total
+                    )
+                }
+
+                else -> throw Exception("API Error: ${response.status}")
+            }
+        } catch (e: NotModifiedException) {
+            // Handle 304 - return cached data if available
+            appLog(LogLevel.DEBUG, "Character comics not modified: ${e.message}")
+
+            val cachedComics = comicDao.getComicsByCharacterId(characterId, offset, limit)
+
+            if (cachedComics.isNotEmpty() && cacheMetadata != null) {
+                PaginatedResult(
+                    items = cachedComics.map { it.toDomain() },
+                    offset = offset,
+                    limit = limit,
+                    total = cacheMetadata.total,
+                    hasMore = offset + limit < cacheMetadata.total
+                )
+            } else {
+                // No cached data available, force a fresh request without ETag
+                appLog(LogLevel.WARN, "No cached character comics available for 304 response, making fresh request")
+                getCharacterComics(
+                    characterId = characterId,
+                    offset = offset,
+                    limit = limit,
+                    orderBy = orderBy,
+                    forceRefresh = true
+                )
+            }
+        } catch (e: Exception) {
+            appLog(LogLevel.ERROR, e.message ?: "Error fetching comics for character $characterId")
+
+            // Fallback to cache on network error
+            val cachedComics = comicDao.getComicsByCharacterId(characterId, offset, limit)
+
+            if (cachedComics.isNotEmpty()) {
+                PaginatedResult(
+                    items = cachedComics.map { it.toDomain() },
+                    offset = offset,
+                    limit = limit,
+                    total = cacheMetadata?.total ?: cachedComics.size,
+                    hasMore = false // Conservative approach during offline
+                )
+            } else {
+                throw e
+            }
+        }
+    }
+
     private fun buildRequestKey(
         entityType: String,
         offset: Int,
@@ -301,5 +428,163 @@ class MarvelRepository(
         characterDao.deleteOldCharacters(expiredThreshold)
         comicDao.deleteOldComics(expiredThreshold)
         cacheMetadataDao.deleteExpiredMetadata(currentTime)
+    }
+
+    @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
+    suspend fun getCharacterById(
+        id: Int,
+        forceRefresh: Boolean = false
+    ): Character {
+        val requestKey = "character_id_$id"
+        val cacheMetadata = cacheMetadataDao.getCacheMetadata(requestKey)
+
+        // Check cache first
+        if (!forceRefresh && cacheMetadata != null && !isCacheExpired(cacheMetadata)) {
+            val cachedCharacter = characterDao.getCharacterById(id)
+            if (cachedCharacter != null) {
+                return cachedCharacter.toDomain()
+            }
+        }
+
+        // Make API request with ETag if available
+        return try {
+            val headers = cacheMetadata?.etag?.let { mapOf("If-None-Match" to it) } ?: emptyMap()
+            val response = apiService.getCharacterById(id, headers)
+
+            when (response.code) {
+                304 -> {
+                    // Not modified - throw exception to indicate no new data
+                    throw NotModifiedException("Character not modified since last request. ETag: ${cacheMetadata?.etag}")
+                }
+
+                200 -> {
+                    // New data, cache it
+                    val character = response.data.results.firstOrNull()
+                        ?: throw Exception("Character with ID $id not found")
+
+                    characterDao.insertCharacters(listOf(character.toEntity()))
+
+                    // Update cache metadata
+                    val newMetadata = CacheMetadata(
+                        id = Uuid.random().toString(),
+                        requestKey = requestKey,
+                        etag = response.etag,
+                        lastFetched = Clock.System.now().toEpochMilliseconds(),
+                        offset = 0,
+                        limit = 1,
+                        total = 1,
+                        entityType = "character",
+                        queryParams = id.toString(),
+                        expirationTime = Clock.System.now().toEpochMilliseconds() + (24 * 60 * 60 * 1000)
+                    )
+                    cacheMetadataDao.insertCacheMetadata(newMetadata)
+
+                    character
+                }
+
+                else -> throw Exception("API Error: ${response.status}")
+            }
+        } catch (e: NotModifiedException) {
+            // Handle 304 - return cached data if available
+            appLog(LogLevel.DEBUG, "Character not modified: ${e.message}")
+
+            val cachedCharacter = characterDao.getCharacterById(id)
+            if (cachedCharacter != null && cacheMetadata != null) {
+                cachedCharacter.toDomain()
+            } else {
+                // No cached data available, force a fresh request without ETag
+                appLog(LogLevel.WARN, "No cached character available for 304 response, making fresh request")
+                getCharacterById(id, forceRefresh = true)
+            }
+        } catch (e: Exception) {
+            appLog(LogLevel.ERROR, e.message ?: "Error fetching character with ID $id")
+
+            // Fallback to cache on network error
+            val cachedCharacter = characterDao.getCharacterById(id)
+            if (cachedCharacter != null) {
+                cachedCharacter.toDomain()
+            } else {
+                throw e
+            }
+        }
+    }
+
+    @OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
+    suspend fun getComicById(
+        id: Int,
+        forceRefresh: Boolean = false
+    ): Comic {
+        val requestKey = "comic_id_$id"
+        val cacheMetadata = cacheMetadataDao.getCacheMetadata(requestKey)
+
+        // Check cache first
+        if (!forceRefresh && cacheMetadata != null && !isCacheExpired(cacheMetadata)) {
+            val cachedComic = comicDao.getComicById(id)
+            if (cachedComic != null) {
+                return cachedComic.toDomain()
+            }
+        }
+
+        // Make API request with ETag if available
+        return try {
+            val headers = cacheMetadata?.etag?.let { mapOf("If-None-Match" to it) } ?: emptyMap()
+            val response = apiService.getComicById(id, headers)
+
+            when (response.code) {
+                304 -> {
+                    // Not modified - throw exception to indicate no new data
+                    throw NotModifiedException("Comic not modified since last request. ETag: ${cacheMetadata?.etag}")
+                }
+
+                200 -> {
+                    // New data, cache it
+                    val comic = response.data.results.firstOrNull()
+                        ?: throw Exception("Comic with ID $id not found")
+
+                    comicDao.insertComics(listOf(comic.toEntity()))
+
+                    // Update cache metadata
+                    val newMetadata = CacheMetadata(
+                        id = Uuid.random().toString(),
+                        requestKey = requestKey,
+                        etag = response.etag,
+                        lastFetched = Clock.System.now().toEpochMilliseconds(),
+                        offset = 0,
+                        limit = 1,
+                        total = 1,
+                        entityType = "comic",
+                        queryParams = id.toString(),
+                        expirationTime = Clock.System.now().toEpochMilliseconds() + (24 * 60 * 60 * 1000)
+                    )
+                    cacheMetadataDao.insertCacheMetadata(newMetadata)
+
+                    comic
+                }
+
+                else -> throw Exception("API Error: ${response.status}")
+            }
+        } catch (e: NotModifiedException) {
+            // Handle 304 - return cached data if available
+            appLog(LogLevel.DEBUG, "Comic not modified: ${e.message}")
+
+            val cachedComic = comicDao.getComicById(id)
+            if (cachedComic != null && cacheMetadata != null) {
+                cachedComic.toDomain()
+            } else {
+                // No cached data available, force a fresh request without ETag
+                appLog(LogLevel.WARN, "No cached comic available for 304 response, making fresh request")
+                getComicById(id, forceRefresh = true)
+            }
+        } catch (e: Exception) {
+            appLog(LogLevel.ERROR, e.message ?: "Error fetching comic with ID $id")
+
+            // Fallback to cache on network error
+            val cachedComic = comicDao.getComicById(id)
+            if (cachedComic != null) {
+                cachedComic.toDomain()
+            } else {
+                throw e
+            }
+        }
     }
 }

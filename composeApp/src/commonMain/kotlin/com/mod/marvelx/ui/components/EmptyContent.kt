@@ -23,7 +23,7 @@ fun EmptyContent(searchQuery: String) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = if (searchQuery.isNotEmpty()) "No comics found" else "No comics available",
+                text = if (searchQuery.isNotEmpty()) "No data found" else "No data available",
                 style = MaterialTheme.typography.titleLarge,
                 color = MarvelColors.TextPrimary
             )

@@ -17,7 +17,7 @@ fun ComicsContent(
     comics: List<Comic>,
     isLoadingMore: Boolean,
     loadMoreError: String?,
-    onComicClick: (String) -> Unit,
+    onComicClick: (String, String) -> Unit,
     onRetryLoadMore: () -> Unit,
     onRefresh: () -> Unit,
     isRefreshing: Boolean,
@@ -35,7 +35,7 @@ fun ComicsContent(
             items(comics) { comic ->
                 ComicItem(
                     comic = comic,
-                    onClick = { onComicClick(comic.id.toString()) }
+                    onClick = { onComicClick(comic.id.toString(), comic.title) }
                 )
             }
 

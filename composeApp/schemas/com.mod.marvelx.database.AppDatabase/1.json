@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "458c822ae989eb2ad00f8ddaaa9f47d5",
+    "identityHash": "9843557eb437072d9fcae214e27d8be8",
     "entities": [
       {
         "tableName": "characters",
@@ -270,11 +270,86 @@
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_cache_metadata_requestKey` ON `${TABLE_NAME}` (`requestKey`)"
           }
         ]
+      },
+      {
+        "tableName": "character_comic_cross_ref",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`characterId` INTEGER NOT NULL, `comicId` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`characterId`, `comicId`), FOREIGN KEY(`characterId`) REFERENCES `characters`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`comicId`) REFERENCES `comics`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "characterId",
+            "columnName": "characterId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "comicId",
+            "columnName": "comicId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "characterId",
+            "comicId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_character_comic_cross_ref_characterId",
+            "unique": false,
+            "columnNames": [
+              "characterId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_character_comic_cross_ref_characterId` ON `${TABLE_NAME}` (`characterId`)"
+          },
+          {
+            "name": "index_character_comic_cross_ref_comicId",
+            "unique": false,
+            "columnNames": [
+              "comicId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_character_comic_cross_ref_comicId` ON `${TABLE_NAME}` (`comicId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "characters",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "characterId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "comics",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "comicId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '458c822ae989eb2ad00f8ddaaa9f47d5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9843557eb437072d9fcae214e27d8be8')"
     ]
   }
 }

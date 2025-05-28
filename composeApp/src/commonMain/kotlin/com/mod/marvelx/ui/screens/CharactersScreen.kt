@@ -40,7 +40,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CharactersScreen(
-    onCharacterClick: (String) -> Unit,
+    onCharacterClick: (String, String) -> Unit,
     viewModel: CharactersViewModel = koinViewModel<CharactersViewModel>()
 ) {
     val uiState by viewModel.uiState.collectAsState()

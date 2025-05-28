@@ -8,10 +8,11 @@ import com.mod.marvelx.database.dao.CacheMetadataDao
 import com.mod.marvelx.database.dao.CharacterDao
 import com.mod.marvelx.database.dao.ComicDao
 import com.mod.marvelx.database.entities.CacheMetadata
+import com.mod.marvelx.database.entities.CharacterComicCrossRef
 import com.mod.marvelx.database.entities.CharacterEntity
 import com.mod.marvelx.database.entities.ComicEntity
 
-@Database(entities = [CharacterEntity::class, ComicEntity::class, CacheMetadata::class], version = 1)
+@Database(entities = [CharacterEntity::class, ComicEntity::class, CacheMetadata::class, CharacterComicCrossRef::class], version = 1)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun getCharacterDao(): CharacterDao

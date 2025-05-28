@@ -19,7 +19,7 @@ fun CharactersContent(
     characters: List<Character>,
     isLoadingMore: Boolean,
     loadMoreError: String?,
-    onCharacterClick: (String) -> Unit,
+    onCharacterClick: (String, String) -> Unit,
     onRetryLoadMore: () -> Unit,
     onRefresh: () -> Unit,
     isRefreshing: Boolean,
@@ -39,7 +39,7 @@ fun CharactersContent(
             items(characters) { character ->
                 CharacterItem(
                     character = character,
-                    onClick = { onCharacterClick(character.id.toString()) }
+                    onClick = { onCharacterClick(character.id.toString(), character.name) }
                 )
             }
 
