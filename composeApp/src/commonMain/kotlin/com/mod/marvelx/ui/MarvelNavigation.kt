@@ -37,10 +37,7 @@ fun MarvelNavigation(
         composable(Screen.ComicDetails.route) { backStackEntry ->
             val comicId = backStackEntry.arguments?.getString("comicId") ?: ""
             ComicDetailScreen(
-                comicId = comicId,
-                onBackClick = {
-                    navController.popBackStack()
-                }
+                comicId = comicId
             )
         }
 
@@ -48,9 +45,6 @@ fun MarvelNavigation(
             val characterId = backStackEntry.arguments?.getString("characterId") ?: ""
             CharacterDetailsScreen(
                 characterId = characterId,
-                onNavigateBack = {
-                    navController.popBackStack()
-                },
                 onComicClick = { id, title ->
                     navController.navigate(Screen.ComicDetails.createRoute(id, title))
                 }

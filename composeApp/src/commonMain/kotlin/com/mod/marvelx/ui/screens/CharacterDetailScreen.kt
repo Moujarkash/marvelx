@@ -19,7 +19,6 @@ import org.koin.core.parameter.parametersOf
 fun CharacterDetailsScreen(
     characterId: String,
     onComicClick: (String, String) -> Unit,
-    onNavigateBack: () -> Unit,
     viewModel: CharacterDetailsViewModel = koinViewModel<CharacterDetailsViewModel> { parametersOf(characterId.toInt()) }
 ) {
     val uiState by viewModel.uiState.collectAsState()

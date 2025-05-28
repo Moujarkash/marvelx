@@ -14,8 +14,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ComicDetailScreen(
-    comicId: String,
-    onBackClick: () -> Unit
+    comicId: String
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
