@@ -68,7 +68,7 @@ fun MainScreen() {
                         onNavigate = { route ->
                             navController.navigate(route) {
                                 // Clear back stack when switching between main screens
-                                popUpTo(navController.graph.startDestinationId) {
+                                popUpTo(navController.graph.startDestinationRoute!!) {
                                     saveState = true
                                 }
                                 launchSingleTop = true
